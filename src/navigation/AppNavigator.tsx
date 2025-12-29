@@ -17,12 +17,14 @@ import InvoiceScreen from '../screens/InvoiceScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AuthScreen from '../screens/AuthScreen';
 import UserManagementScreen from '../screens/UserManagementScreen';
+import EventDetailScreen from '../screens/EventDetailScreen';
 
 // Types
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   DriverMode: undefined;
+  EventDetail: { event: any };
 };
 
 export type MainTabParamList = {
@@ -219,6 +221,16 @@ export default function AppNavigator({ isAuthenticated }: AppNavigatorProps) {
                 headerShown: true,
                 title: 'Driver Mode',
                 headerStyle: { backgroundColor: '#4CAF50' },
+                headerTintColor: '#fff',
+              }}
+            />
+            <Stack.Screen 
+              name="EventDetail" 
+              component={EventDetailScreen}
+              options={{
+                headerShown: true,
+                title: 'Event Details',
+                headerStyle: { backgroundColor: '#6200ee' },
                 headerTintColor: '#fff',
               }}
             />

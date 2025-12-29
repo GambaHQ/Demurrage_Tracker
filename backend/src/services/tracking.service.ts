@@ -230,5 +230,9 @@ function mapStopEvent(row: any): StopEvent {
     photos: row.photos,
     isDemurrage: row.is_demurrage,
     createdAt: row.created_at,
+    // User info (if joined)
+    userName: row.first_name && row.last_name 
+      ? `${row.first_name} ${row.last_name}` 
+      : undefined,
   };
 }

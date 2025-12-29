@@ -1,6 +1,6 @@
 // History screen - View past stop events and weekly summaries
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import {
   Card,
   Title,
@@ -13,6 +13,7 @@ import {
   IconButton,
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useAppStore } from '../store/appStore';
 import { StopEvent, WeeklyDemurrage } from '../types';
 import {
@@ -29,6 +30,7 @@ type ViewMode = 'events' | 'weeks';
 
 export default function HistoryScreen() {
   const theme = useTheme();
+  const navigation = useNavigation<any>();
   const [viewMode, setViewMode] = useState<ViewMode>('events');
   const [refreshing, setRefreshing] = useState(false);
   const [selectedWeekEvents, setSelectedWeekEvents] = useState<StopEvent[]>([]);
@@ -83,51 +85,78 @@ export default function HistoryScreen() {
     }
   };
 
+  const handleEventPress = (event: StopEvent) => {
+    navigation.navigate('EventDetail', { event });
+  };
+
   const renderStopEvent = ({ item }: { item: StopEvent }) => (
-    <Card style={[styles.eventCard, item.isDemurrage && styles.demurrageCard]}>
-      <Card.Content>
-        <View style={styles.eventHeader}>
-          <View style={styles.eventTime}>
-            <MaterialCommunityIcons
-              name={item.isDemurrage ? 'clock-alert' : 'clock-outline'}
-              size={24}
-              color={item.isDemurrage ? '#f44336' : theme.colors.primary}
-            />
-            <View>
-              <Text style={styles.eventTimeText}>
-                {formatDateTime(item.startTime)}
-              </Text>
-              {item.endTime && (
-                <Text style={styles.eventEndTime}>
-                  to {formatDateTime(item.endTime)}
+    <TouchableOpacity onPress={() => handleEventPress(item)} activeOpacity={0.7}>
+      <Card style={[styles.eventCard, item.isDemurrage && styles.demurrageCard]}>
+        <Card.Content>
+          <View style={styles.eventHeader}>
+            <View style={styles.eventTime}>
+              <MaterialCommunityIcons
+                name={item.isDemurrage ? 'clock-alert' : 'clock-outline'}
+                size={24}
+                color={item.isDemurrage ? '#f44336' : theme.colors.primary}
+              />
+              <View>
+                <Text style={styles.eventTimeText}>
+                  {formatDateTime(item.startTime)}
                 </Text>
-              )}
+                {item.endTime && (
+                  <Text style={styles.eventEndTime}>
+                    to {formatDateTime(item.endTime)}
+                  </Text>
+                )}
+              </View>
             </View>
+            <Chip
+              mode={item.isDemurrage ? 'flat' : 'outlined'}
+              style={item.isDemurrage ? styles.demurrageChip : undefined}
+              textStyle={item.isDemurrage ? styles.demurrageChipText : undefined}
+            >
+              {formatDuration(item.durationMinutes)}
+            </Chip>
           </View>
-          <Chip
-            mode={item.isDemurrage ? 'flat' : 'outlined'}
-            style={item.isDemurrage ? styles.demurrageChip : undefined}
-            textStyle={item.isDemurrage ? styles.demurrageChipText : undefined}
-          >
-            {formatDuration(item.durationMinutes)}
-          </Chip>
-        </View>
-        
-        <View style={styles.eventLocation}>
-          <MaterialCommunityIcons name="map-marker" size={16} color="#666" />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {formatLocation(item.startLocation)}
-          </Text>
-        </View>
-        
-        {item.isDemurrage && (
-          <View style={styles.demurrageBadge}>
-            <MaterialCommunityIcons name="alert" size={14} color="#f44336" />
-            <Text style={styles.demurrageText}>Demurrage Event</Text>
+          
+          <View style={styles.eventLocation}>
+            <MaterialCommunityIcons name="map-marker" size={16} color="#666" />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {formatLocation(item.startLocation)}
+            </Text>
           </View>
-        )}
-      </Card.Content>
-    </Card>
+          
+          {/* User name if available */}
+          {(item as any).userName && (
+            <View style={styles.userRow}>
+              <MaterialCommunityIcons name="account" size={16} color="#666" />
+              <Text style={styles.userText}>{(item as any).userName}</Text>
+            </View>
+          )}
+          
+          <View style={styles.eventFooter}>
+            {item.isDemurrage && (
+              <View style={styles.demurrageBadge}>
+                <MaterialCommunityIcons name="alert" size={14} color="#f44336" />
+                <Text style={styles.demurrageText}>Demurrage</Text>
+              </View>
+            )}
+            {(item.photos && item.photos.length > 0) && (
+              <Chip icon="camera" compact style={styles.infoChip}>
+                {item.photos.length}
+              </Chip>
+            )}
+            {item.notes && (
+              <Chip icon="note-text" compact style={styles.infoChip}>
+                Notes
+              </Chip>
+            )}
+            <MaterialCommunityIcons name="chevron-right" size={20} color="#999" style={styles.chevron} />
+          </View>
+        </Card.Content>
+      </Card>
+    </TouchableOpacity>
   );
 
   const renderWeeklySummary = ({ item }: { item: WeeklyDemurrage }) => (
@@ -314,6 +343,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#f44336',
     fontWeight: '600',
+  },
+  userRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  userText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  eventFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  infoChip: {
+    height: 24,
+    backgroundColor: '#e3f2fd',
+  },
+  chevron: {
+    marginLeft: 'auto',
   },
   weekCard: {
     marginBottom: 12,

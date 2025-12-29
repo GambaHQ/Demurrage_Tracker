@@ -80,6 +80,7 @@ export interface StopEvent {
   photos?: string[];
   isDemurrage: boolean;
   createdAt: Date;
+  userName?: string; // User who created the event
 }
 
 export interface WeeklyDemurrage {
