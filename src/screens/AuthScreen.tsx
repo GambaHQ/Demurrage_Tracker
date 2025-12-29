@@ -587,7 +587,7 @@ export default function AuthScreen() {
                 loading={isSubmitting}
                 disabled={isSubmitting}
                 style={styles.submitButton}
-                icon="email-send"
+                icon="email-fast"
               >
                 Send Reset Code
               </Button>
