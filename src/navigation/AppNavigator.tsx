@@ -1,10 +1,12 @@
 // App navigation configuration
 import React from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../store/appStore';
 
 // Screens
@@ -41,6 +43,7 @@ const DriverTab = createBottomTabNavigator<DriverTabParamList>();
 
 function MainTabs() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -50,9 +53,21 @@ function MainTabs() {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.outline,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingBottom: Math.max(insets.bottom, 10),
+          paddingTop: 10,
+          height: 70 + Math.max(insets.bottom, 0),
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
         },
         headerStyle: {
           backgroundColor: theme.colors.primary,
@@ -119,6 +134,7 @@ function MainTabs() {
 
 function DriverTabs() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <DriverTab.Navigator
@@ -128,9 +144,21 @@ function DriverTabs() {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.outline,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingBottom: Math.max(insets.bottom, 10),
+          paddingTop: 10,
+          height: 70 + Math.max(insets.bottom, 0),
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
         },
         headerStyle: {
           backgroundColor: theme.colors.primary,
