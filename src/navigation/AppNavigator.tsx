@@ -22,6 +22,7 @@ import UserManagementScreen from '../screens/UserManagementScreen';
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  DriverMode: undefined;
 };
 
 export type MainTabParamList = {
@@ -209,7 +210,19 @@ export default function AppNavigator({ isAuthenticated }: AppNavigatorProps) {
         ) : effectiveRole === 'driver' ? (
           <Stack.Screen name="Main" component={DriverTabs} />
         ) : (
-          <Stack.Screen name="Main" component={MainTabs} />
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen 
+              name="DriverMode" 
+              component={DriverDashboardScreen}
+              options={{
+                headerShown: true,
+                title: 'Driver Mode',
+                headerStyle: { backgroundColor: '#4CAF50' },
+                headerTintColor: '#fff',
+              }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
