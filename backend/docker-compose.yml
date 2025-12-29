@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: demurrage_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: demurrage123
+      POSTGRES_DB: demurrage_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

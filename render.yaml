@@ -1,0 +1,38 @@
+# Render Blueprint - Infrastructure as Code
+# Deploy with: render blueprint apply
+# Or manually deploy from Render Dashboard
+
+services:
+  # Backend API
+  - type: web
+    name: demurrage-tracker-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        value: dpg-d58vdamr433s73fh0ke0-a.oregon-postgres.render.com
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: demurrage_tracker_db
+      - key: DB_USER
+        value: demurrage_tracker_db_user
+      - key: DB_PASSWORD
+        sync: false  # Set manually in Render dashboard for security
+      - key: DB_SSL
+        value: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+    healthCheckPath: /health
+    autoDeploy: true

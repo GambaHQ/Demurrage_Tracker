@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "DemurrageTracker",
+    "name": "Demurrage Tracker",
     "slug": "DemurrageTracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,21 +10,72 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2196F3"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.demurragetracker.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Demurrage Tracker needs location access to detect when you stop and start moving.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Demurrage Tracker needs background location access to track stops while the app is closed.",
+        "NSLocationAlwaysUsageDescription": "Demurrage Tracker needs background location access to track stops while the app is closed.",
+        "NSFaceIDUsageDescription": "Use Face ID to securely unlock Demurrage Tracker.",
+        "NSMotionUsageDescription": "Demurrage Tracker uses motion sensors to detect when you stop and start moving.",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
+      }
     },
     "android": {
+      "package": "com.demurragetracker.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#2196F3"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "WAKE_LOCK",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "VIBRATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Demurrage Tracker needs location access to detect stops and calculate demurrage time.",
+          "locationAlwaysPermission": "Demurrage Tracker needs background location access to track stops while the app is closed.",
+          "locationWhenInUsePermission": "Demurrage Tracker needs location access to detect when you stop and start moving.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Demurrage Tracker uses motion sensors to detect movement."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Use Face ID to securely unlock Demurrage Tracker."
+        }
+      ],
+      "expo-secure-store"
+    ]
   }
 }
