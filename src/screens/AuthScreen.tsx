@@ -14,6 +14,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppStore } from '../store/appStore';
 import * as api from '../services/api';
+import { clearAllLocalData } from '../services/database';
 
 type AuthMode = 'login' | 'register' | 'invite';
 
@@ -79,6 +80,9 @@ export default function AuthScreen() {
     setError('');
     
     try {
+      // Clear any cached local data from previous user before logging in
+      await clearAllLocalData();
+      
       const response = await api.login({
         email,
         password,
@@ -115,6 +119,9 @@ export default function AuthScreen() {
     setError('');
     
     try {
+      // Clear any cached local data from previous user
+      await clearAllLocalData();
+      
       const response = await api.registerCompany({
         companyName,
         email,

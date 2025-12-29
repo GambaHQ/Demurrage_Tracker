@@ -715,3 +715,31 @@ export async function clearAllTrackingData(): Promise<void> {
     }
   }
 }
+
+/**
+ * Clear ALL local data - used when switching users/companies
+ */
+export async function clearAllLocalData(): Promise<void> {
+  if (isWebPlatform) {
+    webStorage.stopEvents.clear();
+    webStorage.weeklyDemurrage.clear();
+    webStorage.invoices.clear();
+    webStorage.settings = null;
+    saveWebStorage();
+    console.log('All web local data cleared');
+  } else {
+    try {
+      const database = await ensureDb();
+      await database.execAsync(`
+        DELETE FROM stop_events;
+        DELETE FROM weekly_demurrage;
+        DELETE FROM invoices;
+        DELETE FROM settings;
+      `);
+      console.log('All native local data cleared');
+    } catch (error) {
+      console.error('Error clearing all local data:', error);
+      throw error;
+    }
+  }
+}

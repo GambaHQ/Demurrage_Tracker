@@ -1,6 +1,7 @@
 // API service for communicating with the backend
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../config';
+import { clearAllLocalData } from './database';
 
 // API Configuration
 const API_BASE_URL = config.apiUrl;
@@ -159,7 +160,15 @@ export async function logout(): Promise<ApiResponse<void>> {
     body: JSON.stringify({ sessionId }),
   });
   
+  // Clear auth data
   await clearAuthData();
+  
+  // Clear all local cached data to prevent data leakage between users
+  try {
+    await clearAllLocalData();
+  } catch (error) {
+    console.error('Error clearing local data on logout:', error);
+  }
   
   return response;
 }
