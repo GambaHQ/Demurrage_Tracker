@@ -348,3 +348,57 @@ export async function updateUser(
     updatedAt: result.updated_at,
   };
 }
+
+// ===== PASSWORD RESET =====
+
+// Create password reset token
+export async function createPasswordResetToken(email: string): Promise<{ token: string; expiresAt: Date } | null> {
+  // Find user by email
+  const user = await findUserByEmail(email);
+  
+  if (!user) {
+    // Don't reveal if email exists or not
+    return null;
+  }
+  
+  // Generate token (6-digit code for simplicity)
+  const token = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + 1); // Token valid for 1 hour
+  
+  // Store in database (using users table with reset fields)
+  await query(`
+    UPDATE users 
+    SET password_reset_token = $1, password_reset_expires = $2 
+    WHERE id = $3
+  `, [token, expiresAt, user.id]);
+  
+  return { token, expiresAt };
+}
+
+// Verify password reset token and reset password
+export async function resetPassword(email: string, token: string, newPassword: string): Promise<boolean> {
+  // Find user with valid reset token
+  const result = await queryOne<any>(`
+    SELECT id FROM users 
+    WHERE LOWER(email) = LOWER($1) 
+    AND password_reset_token = $2 
+    AND password_reset_expires > NOW()
+  `, [email, token]);
+  
+  if (!result) {
+    return false;
+  }
+  
+  // Hash new password
+  const passwordHash = await hashPassword(newPassword);
+  
+  // Update password and clear reset token
+  await query(`
+    UPDATE users 
+    SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL, updated_at = NOW()
+    WHERE id = $2
+  `, [passwordHash, result.id]);
+  
+  return true;
+}

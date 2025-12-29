@@ -16,7 +16,7 @@ import { useAppStore } from '../store/appStore';
 import * as api from '../services/api';
 import { clearAllLocalData } from '../services/database';
 
-type AuthMode = 'login' | 'register' | 'invite';
+type AuthMode = 'login' | 'register' | 'invite' | 'forgot' | 'reset';
 
 export default function AuthScreen() {
   const theme = useTheme();
@@ -43,6 +43,12 @@ export default function AuthScreen() {
   // Invite fields
   const [inviteToken, setInviteToken] = useState('');
   const [inviteInfo, setInviteInfo] = useState<{email: string; companyName: string; role: string} | null>(null);
+  
+  // Password reset fields
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   useEffect(() => {
     initializeApp();
@@ -210,6 +216,77 @@ export default function AuthScreen() {
     setIsSubmitting(false);
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setError('');
+    
+    try {
+      const response = await api.forgotPassword(email);
+      
+      if (response.success) {
+        // In development, the reset code is returned
+        if (response.data?.resetCode) {
+          setResetCode(response.data.resetCode);
+        }
+        setAuthMode('reset');
+      } else {
+        setError(response.error || 'Failed to send reset code');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to send reset code');
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetCode || !newPassword) {
+      setError('Please enter the reset code and new password');
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setError('');
+    
+    try {
+      const response = await api.resetPassword({
+        email,
+        token: resetCode,
+        newPassword,
+      });
+      
+      if (response.success) {
+        setResetSuccess(true);
+        // Clear fields
+        setPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setResetCode('');
+      } else {
+        setError(response.error || 'Failed to reset password');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to reset password');
+    }
+    
+    setIsSubmitting(false);
+  };
+
   if (isLoading) {
     return (
       <View style={[styles.container, styles.centerContent, { backgroundColor: theme.colors.primary }]}>
@@ -305,6 +382,17 @@ export default function AuthScreen() {
                 icon="login"
               >
                 Sign In
+              </Button>
+              
+              <Button
+                mode="text"
+                onPress={() => {
+                  setAuthMode('forgot');
+                  setError('');
+                }}
+                style={styles.forgotButton}
+              >
+                Forgot Password?
               </Button>
             </>
           )}
@@ -475,6 +563,127 @@ export default function AuthScreen() {
               )}
             </>
           )}
+
+          {/* FORGOT PASSWORD FORM */}
+          {authMode === 'forgot' && (
+            <>
+              <Text style={styles.sectionLabel}>Forgot Password</Text>
+              <Text style={styles.helperText}>
+                Enter your email address and we'll send you a reset code.
+              </Text>
+              <TextInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                mode="outlined"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                style={styles.input}
+                left={<TextInput.Icon icon="email" />}
+              />
+              <Button
+                mode="contained"
+                onPress={handleForgotPassword}
+                loading={isSubmitting}
+                disabled={isSubmitting}
+                style={styles.submitButton}
+                icon="email-send"
+              >
+                Send Reset Code
+              </Button>
+              <Button
+                mode="text"
+                onPress={() => {
+                  setAuthMode('login');
+                  setError('');
+                }}
+                style={styles.forgotButton}
+              >
+                Back to Login
+              </Button>
+            </>
+          )}
+
+          {/* RESET PASSWORD FORM */}
+          {authMode === 'reset' && (
+            <>
+              {resetSuccess ? (
+                <View style={styles.successContainer}>
+                  <MaterialCommunityIcons name="check-circle" size={64} color="#4CAF50" />
+                  <Text style={styles.successTitle}>Password Reset!</Text>
+                  <Text style={styles.successText}>
+                    Your password has been reset successfully. You can now log in with your new password.
+                  </Text>
+                  <Button
+                    mode="contained"
+                    onPress={() => {
+                      setAuthMode('login');
+                      setResetSuccess(false);
+                      setError('');
+                    }}
+                    style={styles.submitButton}
+                    icon="login"
+                  >
+                    Go to Login
+                  </Button>
+                </View>
+              ) : (
+                <>
+                  <Text style={styles.sectionLabel}>Reset Password</Text>
+                  <Text style={styles.helperText}>
+                    Enter the reset code sent to {email} and your new password.
+                  </Text>
+                  <TextInput
+                    label="Reset Code"
+                    value={resetCode}
+                    onChangeText={setResetCode}
+                    mode="outlined"
+                    keyboardType="number-pad"
+                    style={styles.input}
+                    left={<TextInput.Icon icon="key" />}
+                  />
+                  <TextInput
+                    label="New Password (min 8 characters)"
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    mode="outlined"
+                    secureTextEntry
+                    style={styles.input}
+                    left={<TextInput.Icon icon="lock" />}
+                  />
+                  <TextInput
+                    label="Confirm Password"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    mode="outlined"
+                    secureTextEntry
+                    style={styles.input}
+                    left={<TextInput.Icon icon="lock-check" />}
+                  />
+                  <Button
+                    mode="contained"
+                    onPress={handleResetPassword}
+                    loading={isSubmitting}
+                    disabled={isSubmitting}
+                    style={styles.submitButton}
+                    icon="lock-reset"
+                  >
+                    Reset Password
+                  </Button>
+                  <Button
+                    mode="text"
+                    onPress={() => {
+                      setAuthMode('forgot');
+                      setError('');
+                    }}
+                    style={styles.forgotButton}
+                  >
+                    Didn't receive code? Try again
+                  </Button>
+                </>
+              )}
+            </>
+          )}
         </Surface>
 
         <View style={styles.footer}>
@@ -569,6 +778,26 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 8,
     paddingVertical: 4,
+  },
+  forgotButton: {
+    marginTop: 8,
+  },
+  successContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 16,
+    color: '#2E7D32',
+  },
+  successText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
   footer: {
     flexDirection: 'row',

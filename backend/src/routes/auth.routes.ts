@@ -10,6 +10,8 @@ import {
   getCompanyUsers,
   getPendingInvitations,
   updateUser,
+  createPasswordResetToken,
+  resetPassword,
 } from '../services/auth.service';
 import { createSession, endSession } from '../services/session.service';
 import { authenticate, authorize, generateToken, generateRefreshToken } from '../middleware/auth';
@@ -343,6 +345,64 @@ router.patch('/users/:userId', authenticate, authorize('owner', 'admin'), async 
         role: user.role,
         isActive: user.isActive,
       },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ===== PASSWORD RESET =====
+
+// Request password reset (forgot password)
+router.post('/forgot-password', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      res.status(400).json({ success: false, error: 'Email is required' });
+      return;
+    }
+    
+    const result = await createPasswordResetToken(email);
+    
+    // Always return success to not reveal if email exists
+    // In production, you would send an email with the reset code
+    res.json({
+      success: true,
+      message: 'If an account exists with this email, a reset code has been sent.',
+      // For development, include the code (remove in production!)
+      ...(result && process.env.NODE_ENV !== 'production' && { resetCode: result.token }),
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Reset password with token
+router.post('/reset-password', async (req: Request, res: Response) => {
+  try {
+    const { email, token, newPassword } = req.body;
+    
+    if (!email || !token || !newPassword) {
+      res.status(400).json({ success: false, error: 'Email, reset code, and new password are required' });
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
+      return;
+    }
+    
+    const success = await resetPassword(email, token, newPassword);
+    
+    if (!success) {
+      res.status(400).json({ success: false, error: 'Invalid or expired reset code' });
+      return;
+    }
+    
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully. You can now log in with your new password.',
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

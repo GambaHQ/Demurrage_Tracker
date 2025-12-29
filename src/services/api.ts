@@ -214,6 +214,26 @@ export async function acceptInvitation(data: {
   return response;
 }
 
+// ============ PASSWORD RESET ============
+
+export async function forgotPassword(email: string): Promise<ApiResponse<{ message: string; resetCode?: string }>> {
+  return apiRequest('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(data: {
+  email: string;
+  token: string;
+  newPassword: string;
+}): Promise<ApiResponse<{ message: string }>> {
+  return apiRequest('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function getCompanyUsers(): Promise<ApiResponse<User[]>> {
   return apiRequest('/auth/users');
 }

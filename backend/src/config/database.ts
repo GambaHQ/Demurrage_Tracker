@@ -49,6 +49,8 @@ export async function initializeDatabase(): Promise<void> {
         last_name VARCHAR(100) NOT NULL,
         role VARCHAR(20) NOT NULL CHECK (role IN ('owner', 'admin', 'driver')),
         is_active BOOLEAN DEFAULT true,
+        password_reset_token VARCHAR(10),
+        password_reset_expires TIMESTAMP WITH TIME ZONE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(email, company_id)
