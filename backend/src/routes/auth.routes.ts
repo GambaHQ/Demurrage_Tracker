@@ -366,12 +366,12 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
     const result = await createPasswordResetToken(email);
     
     // Always return success to not reveal if email exists
-    // In production, you would send an email with the reset code
+    // TODO: Add email sending for production
     res.json({
       success: true,
       message: 'If an account exists with this email, a reset code has been sent.',
-      // For development, include the code (remove in production!)
-      ...(result && process.env.NODE_ENV !== 'production' && { resetCode: result.token }),
+      // Include the code until email sending is implemented
+      ...(result && { resetCode: result.token }),
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

@@ -5,9 +5,8 @@ export const config = {
   // API Base URL
   // Development: Your local machine IP (find with ipconfig/ifconfig)
   // Production: Your Render.com URL
-  apiUrl: __DEV__
-    ? 'http://192.168.0.225:3000/api'  // Change to your local IP
-    : 'https://demurrage-tracker-api.onrender.com/api', // Update after Render deploy
+  // Using production API for testing
+  apiUrl: 'https://demurrage-tracker-api.onrender.com/api',
   
   // App Settings
   appName: 'Demurrage Tracker',
