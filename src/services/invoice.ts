@@ -53,52 +53,37 @@ function generateInvoiceHTML(
     )
     .join('');
 
-  // Generate deadhead trips HTML
-  const deadheadHTML = (deadheadTrips && deadheadTrips.length > 0) ? deadheadTrips.map((trip, index) => `
-    <div style="background: #f9f9f9; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2196F3;">
-      <h4 style="margin: 0 0 12px 0; color: #2196F3;">Trip ${index + 1}: ${trip.truckRego}${trip.trailerRego ? ' + ' + trip.trailerRego : ''}</h4>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold; width: 40%;">Start Location:</td>
-          <td style="padding: 8px 0;">${trip.startLocation?.address || 'N/A'}</td>
+  // Generate deadhead trips HTML - compact single-line table format
+  const deadheadHTML = (deadheadTrips && deadheadTrips.length > 0) ? `
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+      <thead>
+        <tr style="background: #2196F3; color: white;">
+          <th style="padding: 8px; text-align: left; font-size: 11px;">#</th>
+          <th style="padding: 8px; text-align: left; font-size: 11px;">TRUCK/TRAILER</th>
+          <th style="padding: 8px; text-align: left; font-size: 11px;">START LOCATION</th>
+          <th style="padding: 8px; text-align: left; font-size: 11px;">END LOCATION</th>
+          <th style="padding: 8px; text-align: center; font-size: 11px;">START KM</th>
+          <th style="padding: 8px; text-align: center; font-size: 11px;">END KM</th>
+          <th style="padding: 8px; text-align: center; font-size: 11px;">TOTAL KM</th>
+          <th style="padding: 8px; text-align: left; font-size: 11px;">START TIME</th>
         </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">End Location:</td>
-          <td style="padding: 8px 0;">${trip.endLocation?.address || 'N/A'}</td>
+      </thead>
+      <tbody>
+        ${deadheadTrips.map((trip, index) => `
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 6px 8px; font-size: 10px;">${index + 1}</td>
+          <td style="padding: 6px 8px; font-size: 10px; font-weight: 600;">${trip.truckRego}${trip.trailerRego ? '+' + trip.trailerRego : ''}</td>
+          <td style="padding: 6px 8px; font-size: 10px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${trip.startLocation?.address || 'N/A'}</td>
+          <td style="padding: 6px 8px; font-size: 10px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${trip.endLocation?.address || 'N/A'}</td>
+          <td style="padding: 6px 8px; font-size: 10px; text-align: center;">${trip.startOdometer.toLocaleString()}</td>
+          <td style="padding: 6px 8px; font-size: 10px; text-align: center;">${trip.endOdometer?.toLocaleString() || 'N/A'}</td>
+          <td style="padding: 6px 8px; font-size: 10px; text-align: center; font-weight: 600; color: #2196F3;">${trip.totalKm || 0}</td>
+          <td style="padding: 6px 8px; font-size: 10px;">${formatDateTime(new Date(trip.startTime).getTime())}</td>
         </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">Start Odometer:</td>
-          <td style="padding: 8px 0;">${trip.startOdometer.toLocaleString()} km</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">End Odometer:</td>
-          <td style="padding: 8px 0;">${trip.endOdometer?.toLocaleString() || 'N/A'} km</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">Distance Traveled:</td>
-          <td style="padding: 8px 0; color: #2196F3; font-weight: bold;">${trip.totalKm || 0} km</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">Start Time:</td>
-          <td style="padding: 8px 0;">${formatDateTime(new Date(trip.startTime).getTime())}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">End Time:</td>
-          <td style="padding: 8px 0;">${trip.endTime ? formatDateTime(new Date(trip.endTime).getTime()) : 'N/A'}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">Travel Time:</td>
-          <td style="padding: 8px 0;">${formatDuration(trip.travelMinutes || 0)}</td>
-        </tr>
-        ${trip.breaks && trip.breaks.length > 0 ? `
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold;">Breaks Taken:</td>
-          <td style="padding: 8px 0;">${trip.breaks.length} (${formatDuration(trip.totalBreakMinutes || 0)} total)</td>
-        </tr>
-        ` : ''}
-      </table>
-    </div>
-  `).join('') : '';
+        `).join('')}
+      </tbody>
+    </table>
+  ` : '';
 
   return `
 <!DOCTYPE html>
@@ -267,10 +252,8 @@ function generateInvoiceHTML(
     </table>
 
     ${deadheadHTML ? `
-    <h3 style="margin-top: 40px;">Deadrunning Travel - Separate Jobs</h3>
-    <div style="margin-bottom: 30px;">
-      ${deadheadHTML}
-    </div>
+    <h3 style="margin-top: 40px;">Deadrunning Trips - Separate Jobs</h3>
+    ${deadheadHTML}
     ` : ''}
 
     <div class="total-section">
