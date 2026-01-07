@@ -111,6 +111,39 @@ export interface Invoice {
   pdfPath?: string;
 }
 
+// Deadhead Travel types
+export interface DeadheadBreak {
+  id: string;
+  tripId: string;
+  startTime: Date;
+  endTime?: Date;
+  startLocation: Location;
+  endLocation?: Location;
+  durationMinutes: number;
+}
+
+export interface DeadheadTrip {
+  id: string;
+  companyId: string;
+  userId: string;
+  sessionId?: string;
+  truckRego: string;
+  trailerRego?: string;
+  startOdometer: number;
+  endOdometer?: number;
+  totalKm?: number;
+  startTime: Date;
+  endTime?: Date;
+  startLocation: Location;
+  endLocation?: Location;
+  breaks: DeadheadBreak[];
+  totalBreakMinutes: number;
+  travelMinutes: number;
+  isComplete: boolean;
+  createdAt: Date;
+  userName?: string;
+}
+
 export interface Invitation {
   id: string;
   companyId: string;

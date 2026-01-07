@@ -350,6 +350,77 @@ export async function getWeeklySummary(): Promise<ApiResponse<any>> {
   return apiRequest('/tracking/weekly');
 }
 
+// ============ DEADHEAD TRAVEL API ============
+
+export async function startDeadheadTrip(data: {
+  truckRego: string;
+  trailerRego?: string;
+  startOdometer: number;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}): Promise<ApiResponse<any>> {
+  return apiRequest('/deadhead/start', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getActiveDeadheadTrip(): Promise<ApiResponse<any>> {
+  return apiRequest('/deadhead/active');
+}
+
+export async function startDeadheadBreak(data: {
+  tripId: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}): Promise<ApiResponse<any>> {
+  return apiRequest('/deadhead/break/start', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function endDeadheadBreak(data: {
+  breakId: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}): Promise<ApiResponse<any>> {
+  return apiRequest('/deadhead/break/end', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function endDeadheadTrip(data: {
+  tripId: string;
+  endOdometer: number;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}): Promise<ApiResponse<any>> {
+  return apiRequest('/deadhead/end', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getDeadheadTrips(params?: {
+  startDate?: string;
+  endDate?: string;
+  userId?: string;
+}): Promise<ApiResponse<any[]>> {
+  const queryParams = new URLSearchParams();
+  if (params?.startDate) queryParams.set('startDate', params.startDate);
+  if (params?.endDate) queryParams.set('endDate', params.endDate);
+  if (params?.userId) queryParams.set('userId', params.userId);
+  
+  const query = queryParams.toString();
+  return apiRequest(`/deadhead/trips${query ? `?${query}` : ''}`);
+}
+
 // ============ CHECK AUTH STATUS ============
 
 export async function checkAuthStatus(): Promise<{

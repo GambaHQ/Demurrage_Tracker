@@ -18,6 +18,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import AuthScreen from '../screens/AuthScreen';
 import UserManagementScreen from '../screens/UserManagementScreen';
 import EventDetailScreen from '../screens/EventDetailScreen';
+import DeadheadTravelScreen from '../screens/DeadheadTravelScreen';
 
 // Types
 export type RootStackParamList = {
@@ -25,6 +26,7 @@ export type RootStackParamList = {
   Main: undefined;
   DriverMode: undefined;
   EventDetail: { event: any };
+  DeadheadTravel: undefined;
 };
 
 export type MainTabParamList = {
@@ -32,11 +34,13 @@ export type MainTabParamList = {
   History: undefined;
   Invoice: undefined;
   Users: undefined;
+  Deadhead: undefined;
   Settings: undefined;
 };
 
 export type DriverTabParamList = {
   DriverDashboard: undefined;
+  Deadhead: undefined;
   Settings: undefined;
 };
 
@@ -122,6 +126,16 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
+        name="Deadhead"
+        component={DeadheadTravelScreen}
+        options={{
+          title: 'Deadhead',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="truck-fast" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Settings"
         component={SettingsScreen}
         options={{
@@ -177,8 +191,18 @@ function DriverTabs() {
         component={DriverDashboardScreen}
         options={{
           title: 'Tracking',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size}) => (
             <MaterialCommunityIcons name="truck" color={color} size={size} />
+          ),
+        }}
+      />
+      <DriverTab.Screen
+        name="Deadhead"
+        component={DeadheadTravelScreen}
+        options={{
+          title: 'Deadhead',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="truck-fast" color={color} size={size} />
           ),
         }}
       />

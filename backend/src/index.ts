@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.routes';
 import trackingRoutes from './routes/tracking.routes';
 import vehicleRoutes from './routes/vehicle.routes';
 import companyRoutes from './routes/company.routes';
+import deadheadRoutes from './routes/deadhead.routes';
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/company', companyRoutes);
+app.use('/api/deadhead', deadheadRoutes);
 
 // 404 handler
 app.use((req, res) => {

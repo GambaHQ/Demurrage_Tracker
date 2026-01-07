@@ -168,6 +168,52 @@ export async function initializeDatabase(): Promise<void> {
       
       CREATE INDEX IF NOT EXISTS idx_invitations_token ON invitations(token);
       CREATE INDEX IF NOT EXISTS idx_invitations_email ON invitations(email);
+
+      -- Deadhead trips table
+      CREATE TABLE IF NOT EXISTS deadhead_trips (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        session_id UUID REFERENCES user_sessions(id),
+        truck_rego VARCHAR(20) NOT NULL,
+        trailer_rego VARCHAR(20),
+        start_odometer INTEGER NOT NULL,
+        end_odometer INTEGER,
+        total_km INTEGER,
+        start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+        end_time TIMESTAMP WITH TIME ZONE,
+        start_latitude DECIMAL(10, 8) NOT NULL,
+        start_longitude DECIMAL(11, 8) NOT NULL,
+        start_address TEXT,
+        end_latitude DECIMAL(10, 8),
+        end_longitude DECIMAL(11, 8),
+        end_address TEXT,
+        total_break_minutes INTEGER DEFAULT 0,
+        travel_minutes INTEGER DEFAULT 0,
+        is_complete BOOLEAN DEFAULT false,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE INDEX IF NOT EXISTS idx_deadhead_trips_company ON deadhead_trips(company_id);
+      CREATE INDEX IF NOT EXISTS idx_deadhead_trips_user ON deadhead_trips(user_id);
+      CREATE INDEX IF NOT EXISTS idx_deadhead_trips_date ON deadhead_trips(start_time);
+
+      -- Deadhead breaks table
+      CREATE TABLE IF NOT EXISTS deadhead_breaks (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        trip_id UUID NOT NULL REFERENCES deadhead_trips(id) ON DELETE CASCADE,
+        start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+        end_time TIMESTAMP WITH TIME ZONE,
+        start_latitude DECIMAL(10, 8) NOT NULL,
+        start_longitude DECIMAL(11, 8) NOT NULL,
+        start_address TEXT,
+        end_latitude DECIMAL(10, 8),
+        end_longitude DECIMAL(11, 8),
+        end_address TEXT,
+        duration_minutes INTEGER DEFAULT 0
+      );
+      
+      CREATE INDEX IF NOT EXISTS idx_deadhead_breaks_trip ON deadhead_breaks(trip_id);
     `);
     
     console.log('Database schema initialized successfully');
