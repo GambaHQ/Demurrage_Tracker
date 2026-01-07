@@ -182,7 +182,7 @@ function MainTabs() {
         name="DeadheadNav"
         component={DeadheadTabs}
         options={{
-          title: 'Deadhead',
+          title: 'Deadrunning',
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="truck-fast" color={color} size={size} />
@@ -254,7 +254,7 @@ function DriverTabs() {
         name="DeadheadNav"
         component={DeadheadTabs}
         options={{
-          title: 'Deadhead',
+          title: 'Deadrunning',
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="truck-fast" color={color} size={size} />

@@ -18,6 +18,7 @@ import { useAppStore } from '../store/appStore';
 import { generateWeeklyInvoice, getInvoicePreview } from '../services/invoice';
 import { sendInvoiceEmail, shareInvoice } from '../services/email';
 import { getInvoiceByWeek } from '../services/database';
+import * as api from '../services/api';
 import {
   formatMinutesToHHMM,
   formatDuration,
@@ -43,6 +44,7 @@ export default function InvoiceScreen() {
     totalAmount: number;
     estimatedAmount: number;
   } | null>(null);
+  const [deadheadTrips, setDeadheadTrips] = useState<any[]>([]);
 
   const { currentWeekDemurrage, settings, refreshAllData } = useAppStore();
 
@@ -56,6 +58,22 @@ export default function InvoiceScreen() {
       // Load preview data
       const preview = await getInvoicePreview();
       setPreviewData(preview);
+
+      // Load deadrunning trips for the current week
+      if (currentWeekDemurrage) {
+        const weekStart = new Date(currentWeekDemurrage.weekStartDate);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+
+        const deadheadResponse = await api.getDeadheadTrips({
+          startDate: weekStart.toISOString(),
+          endDate: weekEnd.toISOString(),
+        });
+
+        if (deadheadResponse.success && deadheadResponse.data) {
+          setDeadheadTrips(deadheadResponse.data);
+        }
+      }
 
       // Check if invoice already exists
       if (currentWeekDemurrage?.invoiceGenerated) {
@@ -259,6 +277,50 @@ export default function InvoiceScreen() {
         </Card>
       )}
 
+      {/* Deadrunning Trips List */}
+      {deadheadTrips.length > 0 && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Deadrunning Trips - Separate Jobs</Title>
+            <Divider style={styles.divider} />
+            {deadheadTrips.map((trip, index) => (
+              <View key={trip.id} style={styles.tripCard}>
+                <View style={styles.tripHeader}>
+                  <MaterialCommunityIcons name="truck-fast" size={24} color="#2196F3" />
+                  <Text style={styles.tripTitle}>
+                    Trip {index + 1}: {trip.truckRego}{trip.trailerRego ? ` + ${trip.trailerRego}` : ''}
+                  </Text>
+                </View>
+                <View style={styles.tripDetails}>
+                  <View style={styles.tripRow}>
+                    <Text style={styles.tripLabel}>Distance:</Text>
+                    <Text style={styles.tripValue}>{trip.totalKm || 0} km</Text>
+                  </View>
+                  <View style={styles.tripRow}>
+                    <Text style={styles.tripLabel}>Odometer:</Text>
+                    <Text style={styles.tripValue}>
+                      {trip.startOdometer.toLocaleString()} → {trip.endOdometer?.toLocaleString() || 'N/A'} km
+                    </Text>
+                  </View>
+                  <View style={styles.tripRow}>
+                    <Text style={styles.tripLabel}>Time:</Text>
+                    <Text style={styles.tripValue}>{formatDuration(trip.travelMinutes || 0)}</Text>
+                  </View>
+                  {trip.startLocation?.address && (
+                    <View style={styles.tripRow}>
+                      <Text style={styles.tripLabel}>Route:</Text>
+                      <Text style={[styles.tripValue, { flex: 1 }]} numberOfLines={2}>
+                        {trip.startLocation.address} → {trip.endLocation?.address || 'N/A'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            ))}
+          </Card.Content>
+        </Card>
+      )}
+
       {/* Actions Card */}
       <Card style={styles.card}>
         <Card.Content>
@@ -269,7 +331,7 @@ export default function InvoiceScreen() {
               mode="contained"
               onPress={handleGenerateInvoice}
               loading={isGenerating}
-              disabled={isGenerating || (previewData?.eventCount || 0) === 0}
+              disabled={isGenerating || ((previewData?.eventCount || 0) === 0 && deadheadTrips.length === 0)}
               style={styles.actionButton}
               icon="file-document-edit"
             >
@@ -321,12 +383,12 @@ export default function InvoiceScreen() {
       </Card>
 
       {/* Empty State */}
-      {(!previewData || previewData.eventCount === 0) && (
+      {(!previewData || previewData.eventCount === 0) && deadheadTrips.length === 0 && (
         <View style={styles.emptyState}>
           <MaterialCommunityIcons name="file-document-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyTitle}>No Demurrage Events</Text>
+          <Text style={styles.emptyTitle}>No Events or Trips</Text>
           <Text style={styles.emptySubtitle}>
-            There are no demurrage events for this week yet
+            There are no demurrage events or deadrunning trips for this week yet
           </Text>
         </View>
       )}
@@ -489,5 +551,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#4CAF50',
+  },
+  tripCard: {
+    backgroundColor: '#f9f9f9',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196F3',
+  },
+  tripHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  tripTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  tripDetails: {
+    gap: 8,
+  },
+  tripRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  tripLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    minWidth: 100,
+  },
+  tripValue: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'right',
   },
 });

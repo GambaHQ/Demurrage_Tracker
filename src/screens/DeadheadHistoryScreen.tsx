@@ -70,9 +70,9 @@ export default function DeadheadHistoryScreen() {
     return (
       <View style={styles.emptyContainer}>
         <MaterialCommunityIcons name="truck-fast-outline" size={64} color="#ccc" />
-        <Text style={styles.emptyText}>No deadhead trips yet</Text>
+        <Text style={styles.emptyText}>No deadrunning trips yet</Text>
         <Text style={styles.emptySubtext}>
-          Start tracking your first trip from the Deadhead tab
+          Start tracking your first trip from the Deadrunning tab
         </Text>
       </View>
     );

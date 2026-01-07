@@ -267,7 +267,7 @@ function generateInvoiceHTML(
     </table>
 
     ${deadheadHTML ? `
-    <h3 style="margin-top: 40px;">Deadhead Travel - Separate Jobs</h3>
+    <h3 style="margin-top: 40px;">Deadrunning Travel - Separate Jobs</h3>
     <div style="margin-bottom: 30px;">
       ${deadheadHTML}
     </div>

@@ -1,4 +1,4 @@
-// Deadhead Travel Tracking Screen
+// Deadrunning Travel Tracking Screen
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, TextInput, Button, Card, Title, Divider, Chip, ActivityIndicator } from 'react-native-paper';
@@ -328,7 +328,7 @@ export default function DeadheadTravelScreen() {
       {!activeTrip ? (
         <Card style={styles.card}>
           <Card.Content>
-            <Title>Start Deadhead Trip</Title>
+            <Title>Start Deadrunning Trip</Title>
             <TextInput
               label="Truck Rego *"
               value={truckRego}
@@ -455,7 +455,7 @@ export default function DeadheadTravelScreen() {
         <Card style={[styles.card, styles.warningCard]}>
           <Card.Content>
             <Text style={styles.warningText}>
-              ⚠️ Location permission is required to track deadhead trips
+              ⚠️ Location permission is required to track deadrunning trips
             </Text>
           </Card.Content>
         </Card>
