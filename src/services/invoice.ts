@@ -351,10 +351,13 @@ export async function generateWeeklyInvoice(weekStartDate?: string): Promise<Inv
     const pdfFileName = `invoice_${weeklyData.weekStartDate}_${invoice.id.substring(0, 8)}.pdf`;
     
     try {
-      // Create PDF using expo-print
+      // Create PDF using expo-print with text-based rendering
       const { uri: pdfUri } = await Print.printToFileAsync({
         html,
         base64: false,
+        useMarkupFormatter: true, // Enable text-based PDF generation
+        height: 842, // A4 height in points
+        width: 595, // A4 width in points
       });
       
       // Move PDF to permanent location in invoices directory
