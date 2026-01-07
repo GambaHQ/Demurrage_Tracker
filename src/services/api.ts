@@ -421,6 +421,10 @@ export async function getDeadheadTrips(params?: {
   return apiRequest(`/deadhead/trips${query ? `?${query}` : ''}`);
 }
 
+export async function clearDeadheadTrips(): Promise<ApiResponse<any>> {
+  return apiRequest('/deadhead/trips/clear', { method: 'DELETE' });
+}
+
 // ============ CHECK AUTH STATUS ============
 
 export async function checkAuthStatus(): Promise<{

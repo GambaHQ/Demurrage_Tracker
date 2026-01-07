@@ -191,6 +191,13 @@ export default function SettingsScreen() {
     setIsClearing(true);
     try {
       await clearAllTrackingData();
+      
+      // Also clear deadrunning trips from backend
+      const clearTripsResult = await api.clearDeadheadTrips();
+      if (!clearTripsResult.success) {
+        console.error('Failed to clear deadrunning trips:', clearTripsResult.error);
+      }
+      
       await refreshAllData();
       if (Platform.OS === 'web') {
         window.alert('All tracking data has been cleared.');

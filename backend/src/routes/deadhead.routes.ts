@@ -10,6 +10,7 @@ import {
   getCompletedTrips,
   getActiveBreak
 } from '../services/deadhead.service';
+import { query } from '../config/database';
 
 const router = Router();
 
@@ -179,6 +180,26 @@ router.get('/trips', async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, data: trips });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Delete all trips for company (for clearing data)
+router.delete('/trips/clear', async (req: Request, res: Response) => {
+  try {
+    // Delete all deadhead trips and breaks for the company
+    await query(
+      'DELETE FROM deadhead_breaks WHERE trip_id IN (SELECT id FROM deadhead_trips WHERE company_id = $1)',
+      [req.user!.companyId]
+    );
+    
+    await query(
+      'DELETE FROM deadhead_trips WHERE company_id = $1',
+      [req.user!.companyId]
+    );
+
+    res.json({ success: true, message: 'All deadrunning trips cleared' });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
