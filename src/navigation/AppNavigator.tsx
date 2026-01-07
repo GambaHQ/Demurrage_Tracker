@@ -19,6 +19,7 @@ import AuthScreen from '../screens/AuthScreen';
 import UserManagementScreen from '../screens/UserManagementScreen';
 import EventDetailScreen from '../screens/EventDetailScreen';
 import DeadheadTravelScreen from '../screens/DeadheadTravelScreen';
+import DeadheadHistoryScreen from '../screens/DeadheadHistoryScreen';
 
 // Types
 export type RootStackParamList = {
@@ -34,19 +35,71 @@ export type MainTabParamList = {
   History: undefined;
   Invoice: undefined;
   Users: undefined;
-  Deadhead: undefined;
+  DeadheadNav: undefined;
   Settings: undefined;
 };
 
 export type DriverTabParamList = {
   DriverDashboard: undefined;
-  Deadhead: undefined;
+  DeadheadNav: undefined;
   Settings: undefined;
+};
+
+export type DeadheadTabParamList = {
+  DeadheadTravel: undefined;
+  DeadheadHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const DriverTab = createBottomTabNavigator<DriverTabParamList>();
+const DeadheadTab = createBottomTabNavigator<DeadheadTabParamList>();
+
+function DeadheadTabs() {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <DeadheadTab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: '#999',
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.outline,
+          paddingBottom: Math.max(insets.bottom, 10),
+          paddingTop: 10,
+          height: 70 + Math.max(insets.bottom, 0),
+        },
+        headerStyle: {
+          backgroundColor: theme.colors.primary,
+        },
+        headerTintColor: '#fff',
+      }}
+    >
+      <DeadheadTab.Screen
+        name="DeadheadTravel"
+        component={DeadheadTravelScreen}
+        options={{
+          title: 'Track Trip',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="truck-fast" color={color} size={size} />
+          ),
+        }}
+      />
+      <DeadheadTab.Screen
+        name="DeadheadHistory"
+        component={DeadheadHistoryScreen}
+        options={{
+          title: 'Trip History',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="history" color={color} size={size} />
+          ),
+        }}
+      />
+    </DeadheadTab.Navigator>
+  );
+}
 
 function MainTabs() {
   const theme = useTheme();
@@ -126,10 +179,11 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Deadhead"
-        component={DeadheadTravelScreen}
+        name="DeadheadNav"
+        component={DeadheadTabs}
         options={{
           title: 'Deadhead',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="truck-fast" color={color} size={size} />
           ),
@@ -197,10 +251,11 @@ function DriverTabs() {
         }}
       />
       <DriverTab.Screen
-        name="Deadhead"
-        component={DeadheadTravelScreen}
+        name="DeadheadNav"
+        component={DeadheadTabs}
         options={{
           title: 'Deadhead',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="truck-fast" color={color} size={size} />
           ),
