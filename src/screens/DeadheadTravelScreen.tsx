@@ -140,8 +140,8 @@ export default function DeadheadTravelScreen() {
         setStationaryTime((prev) => {
           const newTime = prev + 1;
           
-          // Auto-start break after 2 minutes (120 seconds)
-          if (newTime === 120 && !activeBreak) {
+          // Auto-start break after 15 minutes (900 seconds)
+          if (newTime === 900 && !activeBreak) {
             startBreakAuto();
           }
           
