@@ -239,51 +239,54 @@ export default function SettingsScreen() {
         </Card>
       )}
 
-      {/* Email Settings */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Email Settings</Title>
-          <TextInput
-            label="Recipient Email"
-            value={localSettings.recipientEmail}
-            onChangeText={(text) =>
-              setLocalSettings((prev) => ({ ...prev, recipientEmail: text }))
-            }
-            mode="outlined"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-            left={<TextInput.Icon icon="email" />}
-          />
-          <Button
-            mode="outlined"
-            onPress={handleTestEmail}
-            style={styles.testButton}
-            icon="email-send"
-          >
-            Send Test Email
-          </Button>
+      {/* Email Settings - Admin/Owner Only */}
+      {user?.role !== 'driver' && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Email Settings</Title>
+            <TextInput
+              label="Recipient Email"
+              value={localSettings.recipientEmail}
+              onChangeText={(text) =>
+                setLocalSettings((prev) => ({ ...prev, recipientEmail: text }))
+              }
+              mode="outlined"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.input}
+              left={<TextInput.Icon icon="email" />}
+            />
+            <Button
+              mode="outlined"
+              onPress={handleTestEmail}
+              style={styles.testButton}
+              icon="email-send"
+            >
+              Send Test Email
+            </Button>
 
-          <List.Item
-            title="Auto-send Weekly Invoice"
-            description="Automatically send invoice on Sunday"
-            left={(props) => <List.Icon {...props} icon="calendar-clock" />}
-            right={() => (
-              <Switch
-                value={localSettings.autoSendInvoice}
-                onValueChange={(value) =>
-                  setLocalSettings((prev) => ({ ...prev, autoSendInvoice: value }))
-                }
-              />
-            )}
-          />
-        </Card.Content>
-      </Card>
+            <List.Item
+              title="Auto-send Weekly Invoice"
+              description="Automatically send invoice on Sunday"
+              left={(props) => <List.Icon {...props} icon="calendar-clock" />}
+              right={() => (
+                <Switch
+                  value={localSettings.autoSendInvoice}
+                  onValueChange={(value) =>
+                    setLocalSettings((prev) => ({ ...prev, autoSendInvoice: value }))
+                  }
+                />
+              )}
+            />
+          </Card.Content>
+        </Card>
+      )}
 
-      {/* Demurrage Settings */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Demurrage Settings</Title>
+      {/* Demurrage Settings - Admin/Owner Only */}
+      {user?.role !== 'driver' && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Demurrage Settings</Title>
           <TextInput
             label="Demurrage Threshold (minutes)"
             value={String(localSettings.demurrageThresholdMinutes)}
@@ -321,11 +324,13 @@ export default function SettingsScreen() {
           </Text>
         </Card.Content>
       </Card>
+      )}
 
-      {/* Company Info */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Company Information</Title>
+      {/* Company Info - Admin/Owner Only */}
+      {user?.role !== 'driver' && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Company Information</Title>
           <TextInput
             label="Company Name"
             value={localSettings.companyName || ''}
@@ -350,6 +355,7 @@ export default function SettingsScreen() {
           />
         </Card.Content>
       </Card>
+      )}
 
       {/* Security Settings */}
       <Card style={styles.card}>
@@ -416,28 +422,30 @@ export default function SettingsScreen() {
         </Card.Content>
       </Card>
 
-      {/* User Mode */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>User Mode</Title>
-          <List.Item
-            title="Driver Mode"
-            description="Simplified view with start/stop only"
-            left={(props) => <List.Icon {...props} icon="truck" />}
-            right={() => (
-              <Switch
-                value={userRole === 'driver'}
-                onValueChange={(value) => setUserRole(value ? 'driver' : 'admin')}
-              />
-            )}
-          />
-          <Text style={styles.helperText}>
-            {userRole === 'driver' 
-              ? 'Switch off for full admin access with history and invoices'
-              : 'Switch on for simplified driver view'}
-          </Text>
-        </Card.Content>
-      </Card>
+      {/* User Mode - Admin/Owner Only */}
+      {user?.role !== 'driver' && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>User Mode</Title>
+            <List.Item
+              title="Driver Mode"
+              description="Simplified view with start/stop only"
+              left={(props) => <List.Icon {...props} icon="truck" />}
+              right={() => (
+                <Switch
+                  value={userRole === 'driver'}
+                  onValueChange={(value) => setUserRole(value ? 'driver' : 'admin')}
+                />
+              )}
+            />
+            <Text style={styles.helperText}>
+              {userRole === 'driver' 
+                ? 'Switch off for full admin access with history and invoices'
+                : 'Switch on for simplified driver view'}
+            </Text>
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Save Button */}
       <Button
@@ -459,22 +467,28 @@ export default function SettingsScreen() {
             description="Version 1.0.0"
             left={(props) => <List.Icon {...props} icon="information" />}
           />
-          <Divider style={{ marginVertical: 12 }} />
-          <Title style={{ color: '#f44336' }}>Danger Zone</Title>
-          <Text style={styles.helperText}>
-            Clear all tracking data to start fresh. Settings will be preserved.
-          </Text>
-          <Button
-            mode="outlined"
-            onPress={handleClearData}
-            loading={isClearing}
-            disabled={isClearing}
-            style={styles.dangerButton}
-            icon="delete-forever"
-            textColor="#f44336"
-          >
-            Clear All Tracking Data
-          </Button>
+          
+          {/* Danger Zone - Admin/Owner Only */}
+          {user?.role !== 'driver' && (
+            <>
+              <Divider style={{ marginVertical: 12 }} />
+              <Title style={{ color: '#f44336' }}>Danger Zone</Title>
+              <Text style={styles.helperText}>
+                Clear all tracking data to start fresh. Settings will be preserved.
+              </Text>
+              <Button
+                mode="outlined"
+                onPress={handleClearData}
+                loading={isClearing}
+                disabled={isClearing}
+                style={styles.dangerButton}
+                icon="delete-forever"
+                textColor="#f44336"
+              >
+                Clear All Tracking Data
+              </Button>
+            </>
+          )}
         </Card.Content>
       </Card>
 
