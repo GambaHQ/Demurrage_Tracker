@@ -1,6 +1,6 @@
 // Settings screen - Configure app settings and security
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import {
   Card,
   Title,
@@ -82,9 +82,17 @@ export default function SettingsScreen() {
     setIsSaving(true);
     try {
       await saveSettings(localSettings);
-      Alert.alert('Success', 'Settings saved successfully!');
+      if (Platform.OS === 'web') {
+        window.alert('Settings saved successfully!');
+      } else {
+        Alert.alert('Success', 'Settings saved successfully!');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to save settings');
+      if (Platform.OS === 'web') {
+        window.alert('Failed to save settings');
+      } else {
+        Alert.alert('Error', 'Failed to save settings');
+      }
     }
     setIsSaving(false);
   };
@@ -161,28 +169,42 @@ export default function SettingsScreen() {
   };
 
   const handleClearData = async () => {
-    Alert.alert(
-      'Clear All Tracking Data',
-      'This will delete all stop events, demurrage records, and invoices. Your settings will be kept. This cannot be undone!',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear Data',
-          style: 'destructive',
-          onPress: async () => {
-            setIsClearing(true);
-            try {
-              await clearAllTrackingData();
-              await refreshAllData();
-              Alert.alert('Success', 'All tracking data has been cleared.');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to clear data');
-            }
-            setIsClearing(false);
-          },
-        },
-      ]
-    );
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm('Clear All Tracking Data\n\nThis will delete all stop events, demurrage records, and invoices. Your settings will be kept. This cannot be undone!')
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert(
+            'Clear All Tracking Data',
+            'This will delete all stop events, demurrage records, and invoices. Your settings will be kept. This cannot be undone!',
+            [
+              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+              {
+                text: 'Clear Data',
+                style: 'destructive',
+                onPress: () => resolve(true),
+              },
+            ]
+          );
+        });
+
+    if (!confirmed) return;
+
+    setIsClearing(true);
+    try {
+      await clearAllTrackingData();
+      await refreshAllData();
+      if (Platform.OS === 'web') {
+        window.alert('All tracking data has been cleared.');
+      } else {
+        Alert.alert('Success', 'All tracking data has been cleared.');
+      }
+    } catch (error) {
+      if (Platform.OS === 'web') {
+        window.alert('Failed to clear data');
+      } else {
+        Alert.alert('Error', 'Failed to clear data');
+      }
+    }
+    setIsClearing(false);
   };
 
   const handleLogout = async () => {
