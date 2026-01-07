@@ -326,50 +326,42 @@ export default function InvoiceScreen() {
         <Card.Content>
           <Title>Actions</Title>
 
-          {!currentWeekDemurrage?.invoiceGenerated ? (
+          <View style={styles.actionButtons}>
             <Button
               mode="contained"
               onPress={handleGenerateInvoice}
               loading={isGenerating}
               disabled={isGenerating || ((previewData?.eventCount || 0) === 0 && deadheadTrips.length === 0)}
               style={styles.actionButton}
-              icon="file-document-edit"
+              icon={currentInvoice ? "refresh" : "file-document-edit"}
             >
-              Generate Invoice
+              {currentInvoice ? 'Regenerate Invoice' : 'Generate Invoice'}
             </Button>
-          ) : (
-            <View style={styles.actionButtons}>
-              <Button
-                mode="contained"
-                onPress={handleSendInvoice}
-                loading={isSending}
-                disabled={isSending || currentWeekDemurrage?.invoiceSent}
-                style={styles.actionButton}
-                icon="email-send"
-              >
-                {currentWeekDemurrage?.invoiceSent ? 'Invoice Sent' : 'Send via Email'}
-              </Button>
 
-              <Button
-                mode="outlined"
-                onPress={handleShareInvoice}
-                style={styles.actionButton}
-                icon="share-variant"
-              >
-                Share Invoice
-              </Button>
+            {currentInvoice && (
+              <>
+                <Button
+                  mode="contained"
+                  onPress={handleSendInvoice}
+                  loading={isSending}
+                  disabled={isSending || currentWeekDemurrage?.invoiceSent}
+                  style={styles.actionButton}
+                  icon="email-send"
+                >
+                  {currentWeekDemurrage?.invoiceSent ? 'Invoice Sent' : 'Send via Email'}
+                </Button>
 
-              <Button
-                mode="outlined"
-                onPress={handleGenerateInvoice}
-                loading={isGenerating}
-                style={styles.actionButton}
-                icon="refresh"
-              >
-                Regenerate Invoice
-              </Button>
-            </View>
-          )}
+                <Button
+                  mode="outlined"
+                  onPress={handleShareInvoice}
+                  style={styles.actionButton}
+                  icon="share-variant"
+                >
+                  Share Invoice
+                </Button>
+              </>
+            )}
+          </View>
 
           {!settings?.recipientEmail && (
             <View style={styles.warningBox}>
