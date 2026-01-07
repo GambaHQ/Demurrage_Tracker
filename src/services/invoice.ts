@@ -20,6 +20,7 @@ import {
   formatMinutesToHHMM,
 } from '../utils/dateUtils';
 import { formatLocation } from './location';
+import * as api from './api';
 
 /**
  * Generate HTML content for the invoice
@@ -27,7 +28,8 @@ import { formatLocation } from './location';
 function generateInvoiceHTML(
   invoice: Invoice,
   settings: AppSettings,
-  weeklyData: WeeklyDemurrage
+  weeklyData: WeeklyDemurrage,
+  deadheadTrips?: any[]
 ): string {
   const totalHours = Math.floor(invoice.totalMinutes / 60);
   const totalMins = invoice.totalMinutes % 60;
@@ -50,6 +52,53 @@ function generateInvoiceHTML(
     `
     )
     .join('');
+
+  // Generate deadhead trips HTML
+  const deadheadHTML = (deadheadTrips && deadheadTrips.length > 0) ? deadheadTrips.map((trip, index) => `
+    <div style="background: #f9f9f9; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2196F3;">
+      <h4 style="margin: 0 0 12px 0; color: #2196F3;">Trip ${index + 1}: ${trip.truckRego}${trip.trailerRego ? ' + ' + trip.trailerRego : ''}</h4>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold; width: 40%;">Start Location:</td>
+          <td style="padding: 8px 0;">${trip.startLocation?.address || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">End Location:</td>
+          <td style="padding: 8px 0;">${trip.endLocation?.address || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Start Odometer:</td>
+          <td style="padding: 8px 0;">${trip.startOdometer.toLocaleString()} km</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">End Odometer:</td>
+          <td style="padding: 8px 0;">${trip.endOdometer?.toLocaleString() || 'N/A'} km</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Distance Traveled:</td>
+          <td style="padding: 8px 0; color: #2196F3; font-weight: bold;">${trip.totalKm || 0} km</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Start Time:</td>
+          <td style="padding: 8px 0;">${formatDateTime(new Date(trip.startTime).getTime())}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">End Time:</td>
+          <td style="padding: 8px 0;">${trip.endTime ? formatDateTime(new Date(trip.endTime).getTime()) : 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Travel Time:</td>
+          <td style="padding: 8px 0;">${formatDuration(trip.travelMinutes || 0)}</td>
+        </tr>
+        ${trip.breaks && trip.breaks.length > 0 ? `
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Breaks Taken:</td>
+          <td style="padding: 8px 0;">${trip.breaks.length} (${formatDuration(trip.totalBreakMinutes || 0)} total)</td>
+        </tr>
+        ` : ''}
+      </table>
+    </div>
+  `).join('') : '';
 
   return `
 <!DOCTYPE html>
@@ -217,6 +266,13 @@ function generateInvoiceHTML(
       </tbody>
     </table>
 
+    ${deadheadHTML ? `
+    <h3 style="margin-top: 40px;">Deadhead Travel - Separate Jobs</h3>
+    <div style="margin-bottom: 30px;">
+      ${deadheadHTML}
+    </div>
+    ` : ''}
+
     <div class="total-section">
       <div class="total-row">
         <span class="total-label">Total Demurrage Time:</span>
@@ -268,6 +324,26 @@ export async function generateWeeklyInvoice(weekStartDate?: string): Promise<Inv
     // Get all demurrage events for the week
     const events = await getDemurrageEventsByWeek(weeklyData.weekStartDate);
     
+    // Get deadhead trips for the week
+    const weekStart = new Date(weeklyData.weekStartDate);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    
+    let deadheadTrips: any[] = [];
+    try {
+      const deadheadResponse = await api.getDeadheadTrips({
+        startDate: weekStart.toISOString(),
+        endDate: weekEnd.toISOString(),
+      });
+      
+      if (deadheadResponse.success && deadheadResponse.data) {
+        deadheadTrips = deadheadResponse.data;
+      }
+    } catch (error) {
+      console.error('Error fetching deadhead trips:', error);
+      // Continue without deadhead trips if fetch fails
+    }
+    
     // Calculate totals
     const totalMinutes = events.reduce((sum, e) => sum + e.durationMinutes, 0);
     const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
@@ -286,7 +362,7 @@ export async function generateWeeklyInvoice(weekStartDate?: string): Promise<Inv
     };
     
     // Generate HTML
-    const html = generateInvoiceHTML(invoice, settings, weeklyData);
+    const html = generateInvoiceHTML(invoice, settings, weeklyData, deadheadTrips);
     
     // Generate PDF from HTML
     const pdfFileName = `invoice_${weeklyData.weekStartDate}_${invoice.id.substring(0, 8)}.pdf`;
